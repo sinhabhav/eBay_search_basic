@@ -1,0 +1,622 @@
+<!DOCTYPE>
+<html>
+	
+	<head>
+		<title>HW 6</title>
+		<style>
+	td {
+    border-bottom: 1px solid grey;
+}
+		</style>
+		<script type="text/javascript">
+		function onSubmitFunc()
+		{
+			var keywords = document.getElementById("keywords").value; 
+			var minPrice = document.getElementById("MinPrice").value;
+			var maxPrice = document.getElementById("MaxPrice").value;//.trim();
+			var maxHandlingTime = document.getElementById("MaxHandlingTime").value;
+			
+			var alertText="";
+			if(keywords=='')
+			{
+				alertText += "Please enter value for Key Words\n";
+			}
+			if(minPrice!="" && maxPrice!="")
+			{
+				if((minPrice.match(/\S/) && !minPrice.match(/^([0-9]*|\d*\.\d{1}?\d*)$/)) || (maxPrice.match(/\S/) && !maxPrice.match(/^([0-9]*|\d*\.\d{1}?\d*)$/)))
+				{
+					alertText += "Minimum and Maximum Price should be a number\n";
+				}
+			}
+			if((parseInt(minPrice))>(parseInt(maxPrice)))
+				{
+				alertText += "Minimum Price should be less than the Maximum Price\n";
+				}
+			if((parseFloat(maxPrice))<=0)
+			{
+			
+			//document.getElementById("MaxPrice").value ="0";
+			}
+			if(maxHandlingTime!="")
+			{
+				if((maxHandlingTime.match(/\S/)) && (!maxHandlingTime.match(/^([0-9]*)$/)))
+				{
+					alertText += "Maximum Handling Time should be a number\n";
+				}
+				
+					if((parseInt(maxHandlingTime))<1)
+					{
+					alertText += "Maximum Handling Time should be greater than 1 day\n";
+					}
+				
+			}
+			if(alertText)
+			{
+			alert(alertText);
+			return false;
+			}
+			return true;
+		}
+		function setSeller(seller)
+		{
+			if(seller.checked)
+			{
+				seller.value=true;
+			}
+			else
+			{
+				seller.value=false;
+			}
+		}
+		function clearAll(form)
+		{
+		var frm = document.getElementById(form);
+		for(var i=0;i<frm.elements.length;i++)
+		{
+			if((frm.elements[i].type) && (!((frm.elements[i].type == 'submit') ||( frm.elements[i].type=='reset'))))
+			{
+				/*if(frm.elements[i].type=='text')
+				{
+				frm.elements[i].value = "";
+				}
+				if(frm.elements[i].type=='checkbox')
+				{
+					myForm.elements[i].checked = false;
+				}
+				
+				//if(frm.elements[i].type=='checkbox')
+			*/
+			
+				frm.elements[i].checked = false;
+               frm.elements[i].value = '';
+               frm.elements[i].selectedIndex = 0;
+			}
+			}
+			document.getElementById("selectPage").selectedIndex = 0;
+			document.getElementById("selectOrder").selectedIndex = 0;	
+				
+			//frm.isClear.value=true;
+			document.getElementById("isClear").value = "true";
+			 document.getElementById("searchResult").innerHTML  = " ";
+			 
+		}
+		</script>
+			
+			
+ 
+
+	</head>
+	<body>
+	<?php 
+	
+		$query="";
+		$minPriceRange="";
+		$maxPriceRange="";
+		/*$oneTh="";
+		$thTh="";
+		$foTh="";
+		$fiTh="";
+		$siTh="";*/
+		$sortOrder="";
+		$paginationInput="";
+		$MaxHandlingTime="";
+		if(($_SERVER["REQUEST_METHOD"])=="POST")
+			{
+			$query = $_POST["keywords"];
+			$minPriceRange = $_POST["MinPrice"];
+			$maxPriceRange = $_POST["MaxPrice"];
+			
+			if(!empty($_POST['Condition']))
+			{
+			$condition = $_POST['Condition'];
+			foreach($condition as $con)
+			{
+				if($con == "1000") $oneTh="1000";
+				
+				if($con == "3000") $thTh="3000";
+				if($con == "4000") $foTh="4000";
+				if($con == "5000") $fiTh="5000";
+				if($con == "6000") $siTh="6000";
+			}		
+			}
+			
+			if(!empty($_POST['ListingType']))
+			{
+			$lis = $_POST['ListingType'];
+			foreach($lis as $l)
+			{
+				if($l == "FixedPrice") $fix="FixedPrice";
+				
+				if($l == "Auction") $auc="Auction";
+				if($l == "Classified") $cls="Classified";
+				
+			}
+			}
+			if(isset($_POST['ReturnsAcceptedOnly']))
+				$ReturnsAcceptedOnly = "true";
+			
+			if(isset($_POST['FreeShippingOnly']))
+				$FreeShippingOnly = "true";
+				
+			if(isset($_POST['ExpeditedShippingType']))
+				$ExpeditedShippingType = "Expedited";
+				
+				
+			$MaxHandlingTime== $_POST["MaxHandlingTime"];
+			
+			
+			$sortOrder== $_POST["sortOrder"];
+			
+			
+			$paginationInput== $_POST["paginationInput"];
+			
+			}
+	?>
+	 <form id="form1" name="form1" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" onsubmit="return onSubmitFunc();">
+		 <table style="border: 2px solid;">
+			<tr align="middle" >
+			&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<img src="http://cs-server.usc.edu:45678/hw/hw6/ebay.jpg" alt="eBay" width="100" height="50"/>
+				<font size="5"><b> Shopping</b></font>
+			</tr>
+			<tr>
+				<td>
+				 <label><b> Key Words* :</b></label>
+				</td>
+				<td>
+				 <input type="text" name="keywords" id="keywords" style='width:250px' value="<?php if(isset($query)) echo "$query"; ?>"/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				 <label><b> Price Range :</b></label>
+				</td>
+				<td>
+					from $
+				 <input type="text" name="MinPrice" id="MinPrice" value="<?php if(isset($minPriceRange)) echo "$minPriceRange"; ?> " style='width: 40px'/>
+					to
+				 <input type="text" name="MaxPrice" id="MaxPrice" value="<?php if(isset($maxPriceRange)) echo "$maxPriceRange"; ?>" style='width: 40px'/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				 <label> <b> Condition :</b></label>
+				</td>
+				<td>
+				  <input type="checkbox" name="Condition[]" value="1000" <?php if(isset($oneTh)) echo "checked='checked'"; ?> /> New
+				  <input type="checkbox" name="Condition[]" value="3000" <?php if(isset($thTh)) echo "checked='checked'"; ?>/> Used
+				  <input type="checkbox" name="Condition[]" value="4000" <?php if(isset($foTh)) echo "checked='checked'"; ?>/> Very Good
+				  <input type="checkbox" name="Condition[]" value="5000" <?php if(isset($fiTh)) echo "checked='checked'"; ?>/> Good
+				  <input type="checkbox" name="Condition[]" value="6000" <?php if(isset($siTh)) echo "checked='checked'"; ?>/> Acceptable
+				</td>
+			</tr>
+			<tr>
+				<td>
+				 <label><b> Buying Formats :</b></label>
+				</td>
+				<td>
+				 <input type="checkbox" name="ListingType[]" value="FixedPrice" <?php if(isset($fix)) echo "checked='checked'"; ?> /> Buy It Now
+				 <input type="checkbox" name="ListingType[]" value="Auction" <?php if(isset($auc)) echo "checked='checked'"; ?> /> Auction
+				 <input type="checkbox" name="ListingType[]" value="Classified" <?php if(isset($cls)) echo "checked='checked'"; ?> /> Classified Ads
+				</td>
+			</tr>
+			<tr>
+				<td>
+				 <label><b> Seller :</b></label>
+				</td>
+				<td>
+				 <input type="checkbox" name="ReturnsAcceptedOnly" value="" onChange="setSeller(this);" <?php if(isset($ReturnsAcceptedOnly)&& $ReturnsAcceptedOnly=="true") echo "checked='checked'"; ?>/> Returns Accepted
+				</td>
+			</tr>
+			<tr>
+				<td>
+				 <label><b> Shipping :</b></label>
+				</td>
+				<td>
+				 <input type="checkbox" name="FreeShippingOnly" value="FreeShippingOnly" <?php if(isset($FreeShippingOnly) && $FreeShippingOnly=="true") echo "checked='checked'"; ?>/> Free Shipping
+				 </br>
+				 <input type="checkbox" name="ExpeditedShippingType" value="ExpeditedShippingType" <?php if(isset($ExpeditedShippingType)&& $ExpeditedShippingType=="Expedited") echo "checked='checked'"; ?>/> Expedited Shipping Available
+				 </br>
+				 Max handling Time (days) : 
+				 <input type="text" name="MaxHandlingTime" id="MaxHandlingTime" <?php if(isset($MaxHandlingTime)) echo "$MaxHandlingTime"; ?> style='width: 40px'/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				 <label><b> Sort By :</b></label>
+				</td>
+				<td>
+					<select name = "sortOrder">
+					  <option value="BestMatch" id="selectOrder"<?php if($sortOrder=="BestMatch") echo "selected"; ?>>Best Match</option>
+					  <option value="CurrentPriceHighest"<?php if(($sortOrder=="CurrentPriceHighest")) echo "selected"; ?>>Current Price Highest</option>
+					  <option value="PricePlusShippingHighest"<?php if(($sortOrder=="PricePlusShippingHighest")) echo "selected"; ?>>Price Plus Shipping Highest</option>
+					  <option value="PricePlusShippingLowest" <?php if(($sortOrder=="PricePlusShippingLowest")) echo "selected"; ?>>Price Plus Shipping Lowest</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				 <label><b> Results Per Page :</b></label>
+				</td>
+				<td>
+					<select name = "paginationInput">
+					  <option value="5" id="selectPage"<?php if(($paginationInput=="5")) echo "checked='checked'"; ?>>5</option>
+					  <option value="10"<?php if(($paginationInput=="10")) echo "selected"; ?>>10</option>
+					  <option value="15"<?php if(($paginationInput=="15")) echo "selected"; ?>>15</option>
+					  <option value="20"<?php if(($paginationInput=="20")) echo "selected"; ?>>20</option>
+					</select>
+				</td>
+			</tr>
+			<tr></tr>
+			<tr>
+			<td></td>
+				<td>
+				 <input type="hidden" name="isClear" id="isClear" value="false"/>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<input  type="reset" name="clear" id="clear" value="Clear" onClick="clearAll('form1');return false;" style="margin-left:60px;" />
+		
+			<input  type="submit" name="submit" id="submit" value="Submit" />
+				</td>
+			</tr>
+		</table>
+	 </form>
+	<div id="searchResult">
+	<?php $results='';
+	//$flag="";
+	?>
+	<?php //if(isset($_POST["submit"])): ?>
+		
+		<?php
+			if(($_SERVER["REQUEST_METHOD"])=="POST")
+			{
+			$clearForm = $_POST['isClear'];
+			 // echo "clear val".$clearForm;
+			  if($clearForm=="true")
+			  { //echo "clear".$clearForm;
+				$results='';
+				//echo "res".$results;
+			  }
+			else{
+			
+			if(isset($_POST["submit"]))
+			{//echo "here";
+			$apikey = 'USC89e95c-d201-423e-9411-3502d8bf717';
+			
+			$query="";
+			$query = $_POST["keywords"];
+			$safequery = urlencode(trim($query));
+			
+			$urlfilter="";
+			$i = 0;
+			 
+			 $maxPrice = ($_POST["MaxPrice"]);
+			$minPriceRange = urlencode(trim($_POST["MinPrice"]));
+			$maxPriceRange = urlencode(trim($_POST["MaxPrice"]));
+			if(!empty($minPriceRange) || ($minPriceRange=="0"))
+			{
+				$urlfilter .="&itemFilter[".$i."].name=MinPrice&itemFilter[".$i."].value=".$minPriceRange;
+				$i++;
+			}
+			
+			if(!empty($maxPrice)||($maxPrice=="0"))
+			{
+				/*if(((floatval($maxPriceRange)+0.0)=="0"))
+				{
+				echo "max".((floatval($maxPriceRange)) + 10.0);
+				$flag="maxZero";
+				}
+				else*/
+				//{
+				$urlfilter .="&itemFilter[".$i."].name=MaxPrice&itemFilter[".$i."].value=".$maxPriceRange;
+				$i++;
+				//}
+				
+			}
+
+			if(!empty($_POST['Condition']))
+			{
+				
+				$urlfilter .="&itemFilter[".$i."].name=Condition";
+				$i++;
+				$condition = $_POST['Condition'];
+				$cj=0;
+				foreach ($condition as $c){
+				
+					$urlfilter .= "&itemFilter[".$cj."].value=".$c;
+					//echo "!!!!!!!!!!!!!!!!".$urlfilter;
+					$cj++;
+					}
+			}
+			
+			if(!empty($_POST['ListingType']))
+			{
+				$urlfilter .="&itemFilter[".$i."].name=ListingType";
+				$i++;
+				$buying = $_POST['ListingType'];
+				$cl=0;
+				foreach ($buying as $c){
+					$urlfilter .= "&itemFilter[".$cl."].value=".$c;
+					$cl++;
+					}
+			}
+			
+			if(isset($_POST['ReturnsAcceptedOnly']))
+			{
+				 $ReturnsAcceptedOnly='true';
+				 //$urlfilter .= "&ReturnsAcceptedOnly=".$ReturnsAcceptedOnly;
+				 $urlfilter .="&itemFilter[".$i."].name=ReturnsAcceptedOnly&itemFilter[".$i."].value=".$ReturnsAcceptedOnly;
+				$i++;
+			}
+			/*else{
+				 $ReturnsAcceptedOnly='true';
+				 $urlfilter .= "&ReturnsAcceptedOnly=".$ReturnsAcceptedOnly;
+			}*/
+			
+			if(isset($_POST['FreeShippingOnly']))
+			{
+				 $FreeShippingOnly='true';
+				// $urlfilter .= "&FreeShippingOnly=".$FreeShippingOnly;
+								 $urlfilter .="&itemFilter[".$i."].name=FreeShippingOnly&itemFilter[".$i."].value=".$FreeShippingOnly;
+				$i++;
+			}
+			/*else{
+				 $FreeShippingOnly='true';
+				 $urlfilter .= "&FreeShippingOnly=".$FreeShippingOnly;
+			}*/
+			
+			if(isset($_POST['ExpeditedShippingType']))
+			{
+				 $ExpeditedShippingType='Expedited';
+				 //$urlfilter .= "&ExpeditedShippingType=".$ExpeditedShippingType;
+				 $urlfilter .="&itemFilter[".$i."].name=ExpeditedShippingType&itemFilter[".$i."].value=".$ExpeditedShippingType;
+				$i++;
+			}
+			
+			if(!empty($_POST["MaxHandlingTime"]))
+			{
+			$MaxHandlingTime = $_POST["MaxHandlingTime"];
+				//$urlfilter .= "&MaxHandlingTime=".$_POST["MaxHandlingTime"];
+				$urlfilter .="&itemFilter[".$i."].name=MaxHandlingTime&itemFilter[".$i."].value=".$MaxHandlingTime;
+				$i++;
+			}
+		
+			if(!empty($_POST["sortOrder"]))
+			{
+				$urlfilter .= "&sortOrder=".$_POST["sortOrder"];
+			}
+			
+			if(!empty($_POST["paginationInput"]))
+			{
+				$urlfilter .= "&paginationInput.entriesPerPage=".$_POST["paginationInput"];
+			}
+			
+			//$query = 'harry potter';  // You may want to supply your own query
+			//$query = $_POST["keywords"];
+			
+			//$safequery = urlencode($query);  // Make the query URL-friendly
+			//$i = '0';
+			/*$filterarray =
+			  array(
+				array(
+				'name' => 'sortOrder',
+				'value' => $_POST["sortOrder"]),
+				/*array(
+				'name' => 'FreeShippingOnly',
+				'value' => 'true',
+				array(
+				'name' => 'ListingType',
+				'value' => array('AuctionWithBIN','FixedPrice'),
+				'paramName' => '',
+				'paramValue' => ''),
+			  );
+			  function buildURLArray ($filterarray) {
+				  global $urlfilter;
+				  global $i;
+				  // Iterate through each filter in the array
+				  foreach($filterarray as $itemfilter) {
+					// Iterate through each key in the filter
+					foreach ($itemfilter as $key =>$value) {
+					  if(is_array($value)) {
+						foreach($value as $j => $content) { // Index the key for each value
+						  $urlfilter .= "&itemFilter($i).$key($j)=$content";
+						  //$urlfilter .$content;
+						}
+					  }
+					  else {
+						if($value != "") {
+						 // $urlfilter .= "&itemFilter($i).$key=$value";
+						 if($key=="name")
+						 {
+						 $urlfilter .= "&".$value."=";
+						 }
+						 else{
+						 $urlfilter .=$value;
+						 }
+						}
+					  }
+					}
+					$i++;
+				  }
+				  echo $urlfilter;
+				  echo "hello............................";
+				  return "$urlfilter";
+				} // End of buildURLArray function
+
+				// Build the indexed item filter URL snippet
+				buildURLArray($filterarray);*/
+				
+			//$endpoint = 'http://svcs.ebay.com/services/search/FindingService/v1?siteid=0&SECURITY-APPNAME=' . $apikey . '&OPERATION-NAME=findItemsAdvanced&SERVICE-VERSION=1.0.0&RESPONSE-DATA-FORMAT=XML&keywords=' . $safequery . '&paginationInput.entriesPerPage=5&sortOrder=CurrentPriceHighest';//. $urlfilter;//&q=' . $q;
+			//$endpoint = 'http://svcs.ebay.com/services/search/FindingService/v1?siteid=0&SECURITY-APPNAME=USC89e95c-d201-423e-9411-3502d8bf717&OPERATION-NAME=findItemsAdvanced&SERVICE-VERSION=1.0.0&RESPONSE-DATA-FORMAT=XML&keywords=harry%20potter&paginationInput.entriesPerPage=5&sortOrder=CurrentPriceLowest';
+			//$endpoint = 'http://svcs.ebay.com/services/search/FindingService/v1?siteid=0&SECURITY-APPNAME=' . $apikey . '&OPERATION-NAME=findItemsAdvanced&SERVICE-VERSION=1.0.0&RESPONSE-DATA-FORMAT=XML';
+			// . $safequery . '&paginationInput.entriesPerPage=5&sortOrder=CurrentPriceLowest'. $urlfilter;//&q=' . $q;
+			// Construct the findItemsByKeywords HTTP GET call
+			$endpoint = 'http://svcs.ebay.com/services/search/FindingService/v1?siteid=0&SECURITY-APPNAME=' . $apikey . '&OPERATION-NAME=findItemsAdvanced&SERVICE-VERSION=1.0.0&RESPONSE-DATA-FORMAT=XML&keywords=' . $safequery . $urlfilter;
+			/*$apicall = "$endpoint?";
+			$apicall .= "&keywords=$safequery";
+			$apicall .= "&paginationInput.entriesPerPage=5";
+			$apicall .= "&sortOrder=CurrentPriceLowest";
+		*/
+			//echo "endpoint" .htmlentities((string) $endpoint);
+			error_reporting(E_ALL);
+			$resp = simplexml_load_file($endpoint);
+			$results='';
+		//	$results = ."<div id='searchResult'>";
+			if ($resp->ack == "Success") {
+				
+				if($resp->paginationOutput->totalEntries == 0)
+					$results .= "<h2> No results were found</h2>";
+				/*else if($resp->searchResult.count == 0)
+				{
+					echo "<h2> Results count is zero</h2>";
+				}*/
+				else{
+					  
+					  $results .= '<table border="1" rules=rows>' . "\n";
+					   $results .= "<tr>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<b><h3>".$resp->paginationOutput->totalEntries . ' Results for <i>'.$query. "</i></b></h3></tr>";
+					  // If the response was loaded, parse it and build links
+					  foreach($resp->searchResult->item as $item) {
+						
+						if($item->galleryURL)
+						{
+						$pic   = $item->galleryURL;
+						}
+						else{
+						$pic = "http://pics.ebaystatic.com/aw/pics/express/icons/iconPlaceholder_96x96.gif";
+						}
+						$results .= "<tr><td><img src=\"".$pic."\" alt=\"image not available\"</td>";
+						
+						$link  = $item->viewItemURL;
+						$title = $item->title;
+
+						$results .= "<td><a href=\"". $link . "\">". $title . "</a></br>";
+						
+						$conditn = $item->condition->conditionDisplayName;
+						$results .= "<b>Condition: </b> ". $conditn ;
+						
+						$isTopRated = $item->topRatedListing;
+						if($isTopRated=="true")
+						{
+							$results .= "&nbsp&nbsp&nbsp&nbsp";
+							$results .= "<img src=\"http://cs-server.usc.edu:45678/hw/hw6/itemTopRated.jpg\" alt=\"top rated\" height=\"50\" width=\"50\"/>";
+						}
+						$results .= "</br></br>";
+						
+						$listing = $item->listingInfo->listingType;
+						if(((string)$listing == "FixedPrice") ||((string)$listing =="StoreInventory"))
+						{
+							$results .="<b>Buy It Now</b></br>";
+						}
+						if((string)$listing == "Auction")
+						{
+							$results .="<b>Auction</b></br>";
+						}
+						if((string)$listing == "Classified")
+						{
+							$results .="<b>Classified Ad</b></br>";
+						}
+					
+						$returns = $item->returnsAccepted;
+						if($returns == "true")
+						{
+							$results .= "Seller Accepts return</br>";
+						}
+						
+						$shippingCost = $item->shippingInfo->shippingServiceCost;
+						if($shippingCost == "0.0")
+						{
+							$results .= "FREE Shipping";
+						}
+						else{
+							$results .= "Shipping Not FREE";
+						}
+						$expedited = $item->shippingInfo->expeditedShipping;
+						if($expedited == "true")
+						{
+							$results .= "  --  Expedited Shipping is available";
+						}
+						
+						$handlingDays = $item->shippingInfo->handlingTime;
+						if($handlingDays)
+						{
+							$results .= "  --  Handled for shipping in ". $handlingDays." day(s)." ;
+						}
+						
+						$results .= "</br>";
+						
+						$price = $item->sellingStatus->convertedCurrentPrice;
+						$shippingCost = $item->shippingInfo->shippingServiceCost;
+						$results .= "<b> Price :". $price. "</b>";
+						if($shippingCost && !($shippingCost == "0.0"))
+						{
+							$results .=  "<b> (+ " . $shippingCost. "for shipping )  </b>";
+						}
+												
+						$location = $item->location;
+						$results .= "&nbsp&nbsp&nbsp&nbsp<i>".$location ."</i>"; 
+						
+						$results .= '</td></tr>';
+						
+						$tit = (string)$item->title;
+						//echo "<p>$tit</p></br>";
+							}
+						$results .= '</table>';
+						
+						}
+						//$results .= "</div>";
+						//echo $results;
+						//echo htmlentities((string) $results);
+					}
+				// If the response does not indicate 'Success,' print an error
+				else {
+				   $results .="<h3>Oops! The request was not successful.</h3>";
+					}
+					}
+					}
+					}
+				//echo $results;
+				//	$results .= "</div>";
+		?>
+	<?php /*else:
+	
+		if(isset($_POST["isClear"])){
+		echo "clear ".$_POST["isClear"];
+		if(($_POST["isClear"])==true)
+		{
+		$results='';
+		//echo $results;
+		}
+		}*/
+	?>
+	<?php //endif; ?>
+	<?php 
+	
+	
+	echo $results;
+	
+	
+	?>
+	</div>
+	<noscript>
+	</body>
+	</html>
+	
